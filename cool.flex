@@ -283,10 +283,13 @@ WHITE_SPACE (" "|\n|\f|\r|\t|\v)+
   return ERROR;
 }
 
- /* This rule comes after the one for escaped chars such as '\n' and companion:
-    it transforms every string in the form "\c" in "c" as specified by the
-    assignment instructions.
- */
+ /*
+  *  String constants (C syntax)
+  *  Escape sequence \c is accepted for all characters c. Except for 
+  *  \n \t \b \f, the result is c.
+  *  The escaped sequences are handled in one of the previous rule. 
+  *
+  */
 <STRING>\\[^\\|\0] {
   char c[2] = { 0 };
   c[0] = yytext[1];
@@ -336,13 +339,6 @@ WHITE_SPACE (" "|\n|\f|\r|\t|\v)+
   * which must begin with a lower-case letter.
   */
 
-
- /*
-  *  String constants (C syntax)
-  *  Escape sequence \c is accepted for all characters c. Except for 
-  *  \n \t \b \f, the result is c.
-  *
-  */
 
 
 %%
