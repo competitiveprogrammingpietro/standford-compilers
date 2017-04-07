@@ -1,0 +1,38 @@
+Standford Lagunita: Compilers
+-----------------------------
+
+The course covers all the major topics concerning compiler technology theory and
+requires students to implement a fully working compiler for the COOL language, a
+language designed by the course's teacher for the compiler course.
+
+Such language - although not used outside the course - include many of the common
+features of a modern programming language.
+
+LINKS
+
+The repository contains code for the four assigments needed to pass the Compiler
+course, it does not include the code given as part of the assigments by the
+teacher and needed to build a working compiler.
+
+[TARBALLS]
+
+Assigment I : Lexical analyser
+-------------------------------
+The lexical specification given has been implemented using Flex
+and it is contained in the Flex's file : cool.flex
+
+Assigment II : Syntax analyser
+------------------------------
+The syntax analyser is built using Bisont and its file can be found
+at the top level of the hierarchy tree as cool.y
+
+Assigmnet III: Semantic analyser
+--------------------------------
+This is by far the biggest piece of the COOL compiler, the assigment
+required the implementation of a semantic analyser into files
+
+1. semant.h    COMMENTS
+2. semant.cc 
+3. cool-tree.h
+
+
