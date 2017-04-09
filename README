@@ -5,34 +5,49 @@ The course covers all the major topics concerning compiler technology theory and
 requires students to implement a fully working compiler for the COOL language, a
 language designed by the course's teacher for the compiler course.
 
-Such language - although not used outside the course - include many of the common
+Such language - although not used outside the course - includes many of the common
 features of a modern programming language.
-
-LINKS
 
 The repository contains code for the four assigments needed to pass the Compiler
 course, it does not include the code given as part of the assigments by the
 teacher and needed to build a working compiler.
 
-[TARBALLS]
+In theory you could download the Linux VM image from :
 
-Assigment I : Lexical analyser
+https://lagunita.stanford.edu/courses/Engineering/Compilers/Fall2014/info
+
+And replace the appropriate file for each assigment, the COOL manual and support code
+documents provided with the assignemnts are committed in the repository as PDF files.
+
+This project is meant to give a pratical follow-up to my university module dedicated
+to compiler technology and to show genuine interest to the topic, the code has been
+developed during evenings and it is does not claim to be perfect or error-free although
+it passed the course's tests with excellent score.
+
+In particular the code mixes teacher-provided code style with mine and it is not really
+concerned about speed or memory allocations.
+
+Assignment I : Lexical analyser
 -------------------------------
 The lexical specification given has been implemented using Flex
 and it is contained in the Flex's file : cool.flex
 
-Assigment II : Syntax analyser
-------------------------------
+Assignment II : Syntax analyser
+-------------------------------
 The syntax analyser is built using Bisont and its file can be found
 at the top level of the hierarchy tree as cool.y
 
-Assigmnet III: Semantic analyser
---------------------------------
-This is by far the biggest piece of the COOL compiler, the assigment
+Assignment III: Semantic analyser
+---------------------------------
+This is by far the biggest piece of the COOL compiler, the assignment
 required the implementation of a semantic analyser into files
 
 1. semant.h    COMMENTS
 2. semant.cc 
 3. cool-tree.h
 
+Assignment IV: code generator
+-----------------------------
+
+Work in progress, not required to get a certificate though.
 

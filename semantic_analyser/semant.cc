@@ -1,3 +1,8 @@
+/*
+ *  The semantic analyser for the COOL language.
+ *  09/04/2017 Pietro Paolini : general.2.pulsarpietro@spamgourmet.com
+ *
+ */
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -86,6 +91,7 @@ static void initialize_constants(void)
 
     // 
 }
+
 static ClassTable * TABLE;
 static Symbol FILENAME;
 static tree_node * TREE_NODE;
@@ -106,6 +112,8 @@ Features class__class::get_features()
   return features;
 }
 
+// The function pushes on the symbol table all attributes belonging
+// to the parent's up to the Obejct class.
 void class__class::push_hierarchy_attributes_scope()
 {
   if (semant_debug)
@@ -133,6 +141,9 @@ void class__class::push_hierarchy_attributes_scope()
 // End class_class
 
 // Method class
+
+// The list of expressions passed as parameters need to be checked
+// against the formal method's parameters.
 bool method_class::is_conformant(Expressions actual)
 {
   int i;
@@ -168,6 +179,7 @@ bool method_class::is_conformant(Expressions actual)
   }
   return true;
 }
+
 // Semantic analysis methods
 bool class__class::semantic_analysis()
 {
@@ -995,17 +1007,20 @@ bool ClassTable::is_conformant(Symbol parent, Symbol child)
 	     << ")"
 	     << std::endl;
 
-  // Deal with the simplest cases 
-  // 1. SELF_TYPE
-  // 2. Same return type
-  // 3. Both have the same type
-  // 3. All classes inherit from Object
+ // Deal with the simplest cases 
+ // 1. SELF_TYPE
  if (child == SELF_TYPE)
    child = *TABLE->m_map.lookup(SELF_TYPE);
+
+ // 2. Same return type
  if (parent == SELF_TYPE)
    parent = *TABLE->m_map.lookup(SELF_TYPE);
+
+ // 3. Both have the same type
  if (parent == child)
    return true;
+
+ // 4. All classes inherit from Object
  if (parent == Object)
    return true;
 
@@ -1058,6 +1073,7 @@ bool ClassTable::semant_analysis()
       Q.push(tmp);
     }
 
+    // Base classes aren't analysed
     if (is_base_class(node->m_value->get_name())) {
       if (semant_debug)
 	std::cerr << " Skipping " << node->m_value->get_name() << std::endl;
@@ -1088,6 +1104,8 @@ ostream& operator<<(ostream& stream, const ClassTable& obj)
   }
   return stream;
 }
+
+
 Class_ ClassTable::find_class(Symbol name)
 {
   for (int i = m_classes->first(); m_classes->more(i); i = m_classes->next(i)) {
@@ -1098,6 +1116,12 @@ Class_ ClassTable::find_class(Symbol name)
   return NULL;
 }
 
+
+// To find a cycles() in the graph is sufficient to check if
+// the a node's parent's parent does not inherit from the node
+// itself.
+// This simplification is caused by the fact that there is no
+//  multiple inheritance in COOL.
 bool ClassTable::cycles()
 {
   Class_ class_, parent;
@@ -1146,6 +1170,7 @@ bool ClassTable::is_base_class(Symbol name)
   return false;
 }
 
+// In COOL a method is unequivocally determined by its name
 Feature ClassTable::find_method(Class_ class_, Symbol name)
 {
   Features features = class_->get_features();

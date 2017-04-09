@@ -1,3 +1,8 @@
+/*
+ *  The semantic analyser for the COOL language.
+ *  09/04/2017 Pietro Paolini : general.2.pulsarpietro@spamgourmet.com
+ *
+ */
 #ifndef SEMANT_H_
 #define SEMANT_H_
 
