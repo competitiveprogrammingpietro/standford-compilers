@@ -42,7 +42,7 @@ Assignment III: Semantic analyser
 This is by far the biggest piece of the COOL compiler, the assignment
 required the implementation of a semantic analyser into files
 
-1. semant.h    COMMENTS
+1. semant.h   
 2. semant.cc 
 3. cool-tree.h
 
