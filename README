@@ -3,51 +3,77 @@ Standford Lagunita: Compilers
 
 The course covers all the major topics concerning compiler technology theory and
 requires students to implement a fully working compiler for the COOL language, a
-language designed by the course's teacher for the compiler course.
+language designed by the course's teacher for the compiler course. Such language
+- although not used anywhere outside the course - includes many of the
+common features of a modern programming language.
 
-Such language - although not used outside the course - includes many of the common
-features of a modern programming language.
+The repository contains code for the four assignments needed to pass the Compiler
+course, it does not include the code given as part of the assignments by the
+teacher and needed to build and run a working compiler.
 
-The repository contains code for the four assigments needed to pass the Compiler
-course, it does not include the code given as part of the assigments by the
-teacher and needed to build a working compiler.
-
-In theory you could download the Linux VM image from :
+In theory you may wish to download the Linux VM image from :
 
 https://lagunita.stanford.edu/courses/Engineering/Compilers/Fall2014/info
 
-And replace the appropriate file for each assigment, the COOL manual and support code
-documents provided with the assignemnts are committed in the repository as PDF files.
+And replace the appropriate files for each assignment, the COOL manual and support code
+documents provided with the assignments are committed in the repository as PDF files.
 
-This project is meant to give a pratical follow-up to my university module dedicated
-to compiler technology and to show genuine interest to the topic, the code has been
-developed during evenings and it is does not claim to be perfect or error-free although
-it passed the course's tests with excellent score.
+This project is meant to give a practical follow-up to my university module dedicated
+to compiler technology and to show genuine interest to the topic, it has been developed
+during evenings and it is does not claim to be perfect or error-free although
+it passed the course's tests with good scores.
 
-In particular the code mixes teacher-provided code style with mine and it is not really
+In particular the code mixes teacher-provided code with mine and it is not really
 concerned about speed or memory allocations.
+
+The binaries folder contain the full compiler and can be run on an example file:
+
+cd binaries/
+./mycoolc bigexpr.cl
+
+As the run-time system is missing you can't run the generated code even though you do can
+have a look to the generate MIPS assembly code, if you wish.
 
 Assignment I : Lexical analyser
 -------------------------------
 The lexical specification given has been implemented using Flex
 and it is contained in the Flex's file : cool.flex
 
+Grading: 59/63
+
 Assignment II : Syntax analyser
 -------------------------------
 The syntax analyser is built using Bisont and its file can be found
 at the top level of the hierarchy tree as cool.y
 
+Grading: 65/70
+
 Assignment III: Semantic analyser
 ---------------------------------
-This is by far the biggest piece of the COOL compiler, the assignment
+This is by far among the biggest pieces of the COOL compiler, the assignment
 required the implementation of a semantic analyser into files
 
 1. semant.h   
 2. semant.cc 
 3. cool-tree.h
 
+Grading: 62/74
+
+
 Assignment IV: code generator
 -----------------------------
+The assignment's code is about as much as the previous one and it is organised as follow:
 
-Work in progress, not required to get a certificate though.
+1. cgen.h
+2. cgen.cc
+3. cool-tree.h
+
+The code generator hasn't been counted in the final score as the worst result among the
+assignments' result is dropped when computing the final grade, its grade has been 30/63
+and it is not fully implemented as yet.
+
+I still work at it now and then, I want it to be completed for the sake of my personal
+satisfaction - yes I do go around for a walk and talk to people from time to time :-)
+
+
 
