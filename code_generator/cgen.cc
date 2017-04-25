@@ -130,6 +130,7 @@ BoolConst truebool(TRUE);
 CgenClassTable * g_codegen_classtable;
 NameResolver *   g_name_resolver;
 int              label_counter;
+
 //*********************************************************
 //
 // Define method for code generation
@@ -150,6 +151,9 @@ void program_class::cgen(ostream &os)
 
   initialize_constants();
   CgenClassTable *codegen_classtable = new CgenClassTable(classes,os);
+
+  // Abort case
+
   os << "\n# end of generated code\n";
 }
 
@@ -707,18 +711,18 @@ void CgenClassTable::code_constants()
 
 
 CgenClassTable::CgenClassTable(Classes classes, ostream& s) : nds(NULL) , str(s)
-{
-   enterscope();
-   if (cgen_debug) cout << "Building CgenClassTable" << endl;
-   install_basic_classes();
-   install_classes(classes);
-   build_inheritance_tree();
-   
-   // TODO: terrible but I can't change the fact that the project
-   // performs all the code generation in the constructor
-   g_codegen_classtable = this;
-   code();
-   exitscope();
+{ 
+  enterscope();
+  if (cgen_debug) cout << "Building CgenClassTable" << endl;
+  install_basic_classes();
+  install_classes(classes);
+  build_inheritance_tree();
+  
+  // TODO: not ideal but I can't change the fact that the project
+  // performs all the code generation in the constructor
+  g_codegen_classtable = this;
+  code();
+  exitscope();
 }
 
 void CgenClassTable::install_basic_classes()
@@ -1505,65 +1509,88 @@ void assign_class::code(ostream &s) {
   g_name_resolver->emit_store_name(this->name, s);
 }
 
-void static_dispatch_class::code(ostream &s) {
-    if (cgen_debug)
-      std::cerr << typeid(*this).name() << ":" << __func__ << std::endl;
+// Common code for dispatch
+void static dispatch(bool static_dispatch,
+		     Expression expr,
+		     Symbol type_name,
+		     Symbol name,
+		     Expressions actual,
+		     int line_number,
+		     ostream& s) {
 
-  
-}
-
-//I'd love to simplify this
-void dispatch_class::code(ostream &s) {
-  int method_index, params;
+  int method_index, params, abort_branch, start_branch;
   CgenNode * class_;
   Formals method_formals;
+  
 
-  if (cgen_debug)
-    std::cerr << typeid(*this).name() << ":" << __func__ 
-	      << " generating dispatch to " << this->name
-	      << std::endl;;
+  // Build the Abort case at the beginning of the generated code
+  // filename is always string 0.
+  abort_branch = label_counter++;
+  start_branch = label_counter++;
+  
+  // We jump to the start of the method
+  s << JAL; emit_label_ref(start_branch, s); s << endl;
+
+  // Abort branch beginning
+  emit_label_def(abort_branch, s);
+  emit_load_imm(T1, line_number, s);
+  s << LA << ACC << " " << STRCONST_PREFIX << 0 << endl;
+  s << JAL << DISPATCH_ABORT << endl;
+
+
+  // Start branch start
+  emit_label_def(start_branch, s);
   params = 0;
 
   // Compute all parameters' expressions and save them to the stack
-  for (int i = this->actual->first();
-       this->actual->more(i);
-       i = this->actual->next(i))
+  for (int i = actual->first();
+       actual->more(i);
+       i = actual->next(i))
     { 
       params++;
-      this->actual->nth(i)->code(s);
+      actual->nth(i)->code(s);
       g_name_resolver->add(parameter, STACK);
       emit_push(ACC, s);
     }
-  this->expr->code(s);
-
-  // Get the expression's type class
-  if (this->expr->get_type() == SELF_TYPE)
-    class_ =  (CgenNode *) &g_name_resolver->get_class();
-  else
-    class_ = g_codegen_classtable->probe(this->expr->get_type());
+  expr->code(s);
   
+  // Attempt to dispatch on a void object, jump to the abort branch
+  emit_beqz(ACC, abort_branch, s);
+  
+  // Get the expression's type class
+  if (static_dispatch) {
+    class_ = g_codegen_classtable->probe(type_name);
+  } else {
+    if (expr->get_type() == SELF_TYPE)
+      class_ =  (CgenNode *) &g_name_resolver->get_class();
+    else
+      class_ = g_codegen_classtable->probe(expr->get_type());
+  }
+
   // The AST should be correct and this should never happen
   if (!class_) {
     if (cgen_debug)
-      std::cerr << typeid(*this).name() << ":" << __func__ 
-		<< " there is no type " << this->expr->get_type()
+      std::cerr << ":" << __func__  << " there is no type " 
+		<< expr->get_type()
 		<< std::endl;
     throw;
   }
-  method_index = class_->method_index(this->name);
+  method_index = class_->method_index(name);
   if (method_index == -1) {
     if (cgen_debug)
-      std::cerr << typeid(*this).name() << ":" << __func__ 
-		<< " there is no method " << this->name
-		<< " for class " << class_->name << std::endl;
+      std::cerr << ":" << __func__ << " there is no method " 
+		<< name
+		<< " for class " 
+		<< class_->name << std::endl;
     throw;
   }
   if (cgen_debug)
-    std::cerr << typeid(*this).name() << ":" << __func__ 
-	      << " method " << this->name
-	      << " index " << method_index << std::endl;
+    std::cerr << ":" << __func__  << " method " 
+	      << name
+	      << " index " 
+	      << method_index 
+	      << std::endl;
   
-
   // Load the dispatch pointer for object where method is called upon
   emit_load(T1, 2, ACC, s);
   
@@ -1572,6 +1599,38 @@ void dispatch_class::code(ostream &s) {
   emit_jalr(T1, s);
   g_name_resolver->pop_sp(params);
   return;
+}
+		     
+
+void static_dispatch_class::code(ostream &s) {
+    if (cgen_debug)
+      std::cerr << typeid(*this).name() << ":" << __func__ << std::endl;
+   dispatch(true,
+	   this->expr,
+	   this->type_name,
+	   this->name,
+	   this->actual,
+	   this->line_number,
+	   s);
+}
+
+//I'd love to simplify this
+void dispatch_class::code(ostream &s) {
+  int method_index, params, abort_branch, start_branch;
+  CgenNode * class_;
+  Formals method_formals;
+  
+  if (cgen_debug)
+    std::cerr << typeid(*this).name() << ":" << __func__ 
+	      << " generating dispatch to " << this->name
+	      << std::endl;;
+  dispatch(false,
+	   this->expr,
+	   NULL,
+	   this->name,
+	   this->actual,
+	   this->line_number,
+	   s);
 }
 
 void cond_class::code(ostream &s) {
@@ -1893,6 +1952,5 @@ void object_class::code(ostream &s) {
    emit_move(ACC, SELF, s);
   
 }
-
 
 

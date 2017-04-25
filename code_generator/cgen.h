@@ -164,4 +164,3 @@ class BoolConst
   void code_ref(ostream&) const;
 };
 
-
